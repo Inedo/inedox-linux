@@ -116,7 +116,7 @@ namespace Inedo.Extensions.Linux.Operations
             if (!this.ValidateConfiguration())
                 return;
 
-            using (var scriptReader = this.OpenCollectScript(context))
+            using (var scriptReader = this.OpenConfigureScript(context))
             {
                 await SHUtil.ExecuteScriptAsync(
                     context,
