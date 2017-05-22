@@ -13,5 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Operations\SHExecuteOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\SHUtil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VariableFunctions\SHEvalVariableFunction.cs" />
   </ItemGroup>
 </Project>
