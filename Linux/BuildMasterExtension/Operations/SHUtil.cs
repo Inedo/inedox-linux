@@ -17,7 +17,7 @@ namespace Inedo.Extensions.Linux.Operations
             if (scriptNameParts.Length == 2)
             {
                 applicationId = DB.Applications_GetApplications(null, true).FirstOrDefault(a => string.Equals(a.Application_Name, scriptNameParts[0], StringComparison.OrdinalIgnoreCase))?.Application_Id;
-                if (applicationId == null)
+                if (applicationId == null && !string.Equals(scriptNameParts[0], "GLOBAL", StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogError($"Invalid application name {scriptNameParts[0]}.");
                     return null;
