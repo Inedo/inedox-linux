@@ -15,7 +15,12 @@ namespace Inedo.Extensions.Linux.Operations
     {
         private const int Octal755 = 493;
 
-        public static async Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogger logger, bool verbose, Action<string> output = null)
+        public static Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogger logger, bool verbose, MessageLevel outputLevel = MessageLevel.Information, MessageLevel errorLevel = MessageLevel.Error)
+        {
+            return ExecuteScriptAsync(context, scriptReader, arguments, logger, verbose, data => LogMessage(outputLevel, data, logger), errorLevel);
+        }
+
+        public static async Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogger logger, bool verbose, Action<string> output, MessageLevel errorLevel = MessageLevel.Error)
         {
             var fileOps = context.Agent.TryGetService<IFileOperationsExecuter>() as ILinuxFileOperationsExecuter;
             if (fileOps == null)
@@ -25,7 +30,7 @@ namespace Inedo.Extensions.Linux.Operations
             }
 
             var scriptsDirectory = fileOps.CombinePath(fileOps.GetBaseWorkingDirectory(), "scripts");
-            await fileOps.CreateDirectoryAsync(scriptsDirectory);
+            await fileOps.CreateDirectoryAsync(scriptsDirectory).ConfigureAwait(false);
 
             var fileName = fileOps.CombinePath(scriptsDirectory, Guid.NewGuid().ToString("N"));
             try
@@ -65,12 +70,8 @@ namespace Inedo.Extensions.Linux.Operations
 
                 using (var process = ps.CreateProcess(new RemoteProcessStartInfo { FileName = fileName, WorkingDirectory = context.WorkingDirectory, Arguments = arguments }))
                 {
-                    if (output == null)
-                        process.OutputDataReceived += (s, e) => LogMessage(MessageLevel.Information, e.Data, logger);
-                    else
-                        process.OutputDataReceived += (s, e) => output(e.Data);
-
-                    process.ErrorDataReceived += (s, e) => LogMessage(MessageLevel.Error, e.Data, logger);
+                    process.OutputDataReceived += (s, e) => output(e.Data);
+                    process.ErrorDataReceived += (s, e) => LogMessage(errorLevel, e.Data, logger);
                     process.Start();
                     await process.WaitAsync(context.CancellationToken).ConfigureAwait(false);
                     exitCode = process.ExitCode;
