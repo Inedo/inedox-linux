@@ -4,15 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inedo.Diagnostics;
 using Inedo.ExecutionEngine;
-using Inedo.Otter.Extensibility.Operations;
-using Inedo.Otter.Extensibility.RaftRepositories;
+using Inedo.Extensibility.Operations;
+using Inedo.Extensibility.RaftRepositories;
 
 namespace Inedo.Extensions.Linux.Operations
 {
     partial class SHUtil
     {
-        public static Task<TextReader> OpenScriptAssetAsync(string name, ILogSink logger, IOperationExecutionContext context) => Task.FromResult(OpenScriptAsset(name, logger, context));
-        public static TextReader OpenScriptAsset(string name, ILogSink logger, IOperationExecutionContext context)
+        public static async Task<TextReader> OpenScriptAssetAsync(string name, ILogSink logger, IOperationExecutionContext context)
         {
             var qualifiedName = QualifiedName.Parse(name);
             var scriptName = qualifiedName.Name;
@@ -24,14 +23,14 @@ namespace Inedo.Extensions.Linux.Operations
                 if (!scriptName.EndsWith(".sh", StringComparison.OrdinalIgnoreCase))
                     scriptName += ".sh";
 
-                if (raft.GetRaftItem(RaftItemType.Script, scriptName) == null)
+                if (await raft.GetRaftItemAsync(RaftItemType.Script, scriptName) == null)
                 {
                     logger.LogError($"Could not find script {scriptName} in {raftName} raft.");
                     raft.Dispose();
                     return null;
                 }
 
-                return new StreamReader(new RaftStream(raft.OpenRaftItem(RaftItemType.Script, scriptName, FileMode.Open, FileAccess.Read), raft), InedoLib.UTF8Encoding);
+                return new StreamReader(new RaftStream(await raft.OpenRaftItemAsync(RaftItemType.Script, scriptName, FileMode.Open, FileAccess.Read), raft), InedoLib.UTF8Encoding);
             }
             catch
             {
@@ -59,8 +58,8 @@ namespace Inedo.Extensions.Linux.Operations
             public override long Length => this.baseStream.Length;
             public override long Position
             {
-                get { return this.baseStream.Position; }
-                set { this.baseStream.Position = value; }
+                get => this.baseStream.Position;
+                set => this.baseStream.Position = value;
             }
 
             public override void Flush() => this.baseStream.Flush();

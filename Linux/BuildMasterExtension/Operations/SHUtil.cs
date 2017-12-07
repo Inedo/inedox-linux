@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Inedo.BuildMaster.Data;
 using Inedo.BuildMaster.Extensibility.Operations;
 using Inedo.Diagnostics;
@@ -9,7 +10,8 @@ namespace Inedo.Extensions.Linux.Operations
 {
     partial class SHUtil
     {
-        public static TextReader OpenScriptAsset(string name, ILogger logger, IOperationExecutionContext context)
+        public static Task<TextReader> OpenScriptAssetAsync(string name, ILogSink logger, IOperationExecutionContext context) => Task.FromResult(OpenScriptAsset(name, logger, context));
+        public static TextReader OpenScriptAsset(string name, ILogSink logger, IOperationExecutionContext context)
         {
             string scriptName;
             int? applicationId;

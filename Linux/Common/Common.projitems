@@ -9,7 +9,11 @@
     <Import_RootNamespace>Inedo.Extensions.Linux</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)LoggerShim.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\CollectDebianPackagesOperation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\CollectRpmPackagesOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\SHCallOperation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\SHEnsureOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\SHExecuteOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\SHUtil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />

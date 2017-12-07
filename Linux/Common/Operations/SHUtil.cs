@@ -7,6 +7,8 @@ using Inedo.Diagnostics;
 using Inedo.Otter.Extensibility.Operations;
 #elif BuildMaster
 using Inedo.BuildMaster.Extensibility.Operations;
+#else
+using Inedo.Extensibility.Operations;
 #endif
 
 namespace Inedo.Extensions.Linux.Operations
@@ -15,12 +17,12 @@ namespace Inedo.Extensions.Linux.Operations
     {
         private const int Octal755 = 493;
 
-        public static Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogger logger, bool verbose, MessageLevel outputLevel = MessageLevel.Information, MessageLevel errorLevel = MessageLevel.Error)
+        public static Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogSink logger, bool verbose, MessageLevel outputLevel = MessageLevel.Information, MessageLevel errorLevel = MessageLevel.Error)
         {
             return ExecuteScriptAsync(context, scriptReader, arguments, logger, verbose, data => LogMessage(outputLevel, data, logger), errorLevel);
         }
 
-        public static async Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogger logger, bool verbose, Action<string> output, MessageLevel errorLevel = MessageLevel.Error)
+        public static async Task<int?> ExecuteScriptAsync(IOperationExecutionContext context, TextReader scriptReader, string arguments, ILogSink logger, bool verbose, Action<string> output, MessageLevel errorLevel = MessageLevel.Error)
         {
             var fileOps = context.Agent.TryGetService<IFileOperationsExecuter>() as ILinuxFileOperationsExecuter;
             if (fileOps == null)
@@ -101,7 +103,7 @@ namespace Inedo.Extensions.Linux.Operations
             }
         }
 
-        private static void LogMessage(MessageLevel level, string text, ILogger logger)
+        private static void LogMessage(MessageLevel level, string text, ILogSink logger)
         {
             if (!string.IsNullOrWhiteSpace(text))
                 logger.Log(level, text);

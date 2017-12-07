@@ -63,9 +63,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Operations\CollectDebianPackagesOperation.cs" />
-    <Compile Include="Operations\CollectRpmPackagesOperation.cs" />
-    <Compile Include="Operations\SHEnsureOperation.cs" />
     <Compile Include="Operations\SHUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

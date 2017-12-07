@@ -1,16 +1,26 @@
-﻿using System;
+﻿#if !BuildMaster
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Inedo.Diagnostics;
 using Inedo.Documentation;
+#if Otter
 using Inedo.Otter.Documentation;
 using Inedo.Otter.Extensibility;
 using Inedo.Otter.Extensibility.Configurations;
 using Inedo.Otter.Extensibility.Operations;
 using Inedo.Otter.Extensions;
 using Inedo.Otter.Extensions.Configurations;
+using ExecContext = Inedo.Otter.Extensibility.Operations.IOperationExecutionContext;
+#else
+using Inedo.Extensibility;
+using Inedo.Extensibility.Configurations;
+using Inedo.Extensibility.Operations;
+using Inedo.Web;
+using ExecContext = Inedo.Extensibility.Operations.IOperationCollectionContext;
+#endif
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -23,12 +33,10 @@ namespace Inedo.Extensions.Linux.Operations
         [Required]
         [ScriptAlias("Key")]
         [DisplayName("Configuration key")]
-        [Description(CommonDescriptions.Key)]
         public string ConfigurationKey { get; set; }
         [Required]
         [ScriptAlias("Value")]
         [DisplayName("Expected value")]
-        [Description(CommonDescriptions.ExpectedValue)]
         public string ExpectedValue { get; set; }
         [ScriptAlias("Collect")]
         [DisplayName("Collection script")]
@@ -80,20 +88,20 @@ namespace Inedo.Extensions.Linux.Operations
                 Value = this.ExpectedValue
             };
         }
-        public override async Task<PersistedConfiguration> CollectAsync(IOperationExecutionContext context)
+        public override async Task<PersistedConfiguration> CollectAsync(ExecContext context)
         {
             if (!this.ValidateConfiguration())
                 return null;
 
             int? exitCode;
             var output = new List<string>();
-            using (var scriptReader = this.OpenCollectScript(context))
+            using (var scriptReader = await this.OpenCollectScriptAsync(context))
             {
                 exitCode = await SHUtil.ExecuteScriptAsync(
                     context,
                     scriptReader,
                     !string.IsNullOrWhiteSpace(this.CollectScriptAsset) ? this.CollectScriptArgs : null,
-                    this,
+                    this.ToLogSink(),
                     this.Verbose,
                     !this.UseExitCode ? (Action<string>)
                         (s =>
@@ -116,13 +124,13 @@ namespace Inedo.Extensions.Linux.Operations
             if (!this.ValidateConfiguration())
                 return;
 
-            using (var scriptReader = this.OpenConfigureScript(context))
+            using (var scriptReader = await this.OpenConfigureScriptAsync(context))
             {
                 await SHUtil.ExecuteScriptAsync(
                     context,
                     scriptReader,
                     !string.IsNullOrWhiteSpace(this.ConfigureScriptAsset) ? this.ConfigureScriptArgs : null,
-                    this,
+                    this.ToLogSink(),
                     this.Verbose
                 );
             }
@@ -161,17 +169,17 @@ namespace Inedo.Extensions.Linux.Operations
             }
         }
 
-        private TextReader OpenCollectScript(IOperationExecutionContext context)
+        private async Task<TextReader> OpenCollectScriptAsync(IOperationExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(this.CollectScriptAsset))
-                return SHUtil.OpenScriptAsset(this.CollectScriptAsset, this, context);
+                return await SHUtil.OpenScriptAssetAsync(this.CollectScriptAsset, this.ToLogSink(), context);
             else
                 return new StringReader(this.CollectScript);
         }
-        private TextReader OpenConfigureScript(IOperationExecutionContext context)
+        private async Task<TextReader> OpenConfigureScriptAsync(IOperationExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(this.ConfigureScriptAsset))
-                return SHUtil.OpenScriptAsset(this.ConfigureScriptAsset, this, context);
+                return await SHUtil.OpenScriptAssetAsync(this.ConfigureScriptAsset, this.ToLogSink(), context);
             else
                 return new StringReader(this.ConfigureScript);
         }
@@ -207,3 +215,4 @@ namespace Inedo.Extensions.Linux.Operations
         }
     }
 }
+#endif

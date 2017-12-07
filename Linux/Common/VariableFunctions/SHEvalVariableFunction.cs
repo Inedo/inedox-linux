@@ -14,6 +14,10 @@ using Inedo.Otter;
 using Inedo.Otter.Extensibility;
 using Inedo.Otter.Extensibility.Operations;
 using Inedo.Otter.Extensibility.VariableFunctions;
+#else
+using Inedo.Extensibility;
+using Inedo.Extensibility.Operations;
+using Inedo.Extensibility.VariableFunctions;
 #endif
 
 namespace Inedo.Extensions.Linux.VariableFunctions
@@ -40,6 +44,8 @@ Log-Information $NextYear;
         protected override object EvaluateScalar(IGenericBuildMasterContext context)
 #elif Otter
         protected override object EvaluateScalar(IOtterContext context)
+#else
+        protected override object EvaluateScalar(IVariableFunctionContext context)
 #endif
         {
             var execContext = context as IOperationExecutionContext;

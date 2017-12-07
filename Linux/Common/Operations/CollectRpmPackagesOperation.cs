@@ -1,13 +1,22 @@
-﻿using System.Collections.Generic;
+﻿#if !BuildMaster
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Inedo.Agents;
 using Inedo.Diagnostics;
 using Inedo.Documentation;
+#if Otter
 using Inedo.Otter.Data;
 using Inedo.Otter.Extensibility;
 using Inedo.Otter.Extensibility.Operations;
 using Inedo.Otter.Extensions.Configurations;
+using ExecContext = Inedo.Otter.Extensibility.Operations.IOperationExecutionContext;
+#else
+using Inedo.Extensibility;
+using Inedo.Extensibility.Operations;
+using Inedo.Extensibility.Configurations;
+using ExecContext = Inedo.Extensibility.Operations.IOperationCollectionContext;
+#endif
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -17,7 +26,7 @@ namespace Inedo.Extensions.Linux.Operations
     [ScriptNamespace("Linux", PreferUnqualified = true)]
     public sealed class CollectRpmPackagesOperation : CollectOperation<DictionaryConfiguration>
     {
-        public async override Task<DictionaryConfiguration> CollectConfigAsync(IOperationExecutionContext context)
+        public async override Task<DictionaryConfiguration> CollectConfigAsync(ExecContext context)
         {
             var remoteExecuter = await context.Agent.GetServiceAsync<IRemoteProcessExecuter>().ConfigureAwait(false);
             var packages = new List<Package>();
@@ -48,6 +57,7 @@ namespace Inedo.Extensions.Linux.Operations
                 }
             }
 
+#if Otter
             using (var db = new DB.Context())
             {
                 await db.ServerPackages_DeletePackagesAsync(
@@ -68,6 +78,15 @@ namespace Inedo.Extensions.Linux.Operations
                     ).ConfigureAwait(false);
                 }
             }
+#else
+            using (var collect = context.GetServerCollectionContext())
+            {
+                await collect.ClearAllPackagesAsync("RPM");
+
+                foreach (var package in packages)
+                    await collect.CreateOrUpdatePackageAsync("RPM", package.Name, package.Version, null);
+            }
+#endif
 
             return null;
         }
@@ -92,3 +111,4 @@ namespace Inedo.Extensions.Linux.Operations
         }
     }
 }
+#endif
