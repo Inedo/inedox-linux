@@ -2,16 +2,8 @@
 using System.Threading.Tasks;
 using Inedo.Diagnostics;
 using Inedo.Documentation;
-#if Otter
-using Inedo.Otter.Extensibility;
-using Inedo.Otter.Extensibility.Operations;
-#elif BuildMaster
-using Inedo.BuildMaster.Extensibility;
-using Inedo.BuildMaster.Extensibility.Operations;
-#else
 using Inedo.Extensibility;
 using Inedo.Extensibility.Operations;
-#endif
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -44,12 +36,12 @@ namespace Inedo.Extensions.Linux.Operations
 
         public override async Task ExecuteAsync(IOperationExecutionContext context)
         {
-            using (var scriptReader = await SHUtil.OpenScriptAssetAsync(this.ScriptName, this.ToLogSink(), context))
+            using (var scriptReader = await SHUtil.OpenScriptAssetAsync(this.ScriptName, this, context))
             {
                 if (scriptReader == null)
                     return;
 
-                await SHUtil.ExecuteScriptAsync(context, scriptReader, this.Arguments, this.ToLogSink(), this.Verbose, this.OutputLevel, this.ErrorLevel).ConfigureAwait(false);
+                await SHUtil.ExecuteScriptAsync(context, scriptReader, this.Arguments, this, this.Verbose, this.OutputLevel, this.ErrorLevel).ConfigureAwait(false);
             }
         }
 

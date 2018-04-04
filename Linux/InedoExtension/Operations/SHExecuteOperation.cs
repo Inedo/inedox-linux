@@ -3,19 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Inedo.Diagnostics;
 using Inedo.Documentation;
-#if Otter
-using Inedo.Otter.Extensibility;
-using Inedo.Otter.Extensibility.Operations;
-using Inedo.Otter.Extensions;
-#elif BuildMaster
-using Inedo.BuildMaster.Extensibility;
-using Inedo.BuildMaster.Extensibility.Operations;
-using Inedo.BuildMaster.Web;
-#else
 using Inedo.Extensibility;
 using Inedo.Extensibility.Operations;
 using Inedo.Web;
-#endif
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -44,7 +34,7 @@ namespace Inedo.Extensions.Linux.Operations
         [DisplayName("Error log level")]
         public MessageLevel ErrorLevel { get; set; } = MessageLevel.Error;
 
-        public override Task ExecuteAsync(IOperationExecutionContext context) => SHUtil.ExecuteScriptAsync(context, new StringReader(this.ScriptText), null, this.ToLogSink(), this.Verbose, this.OutputLevel, this.ErrorLevel);
+        public override Task ExecuteAsync(IOperationExecutionContext context) => SHUtil.ExecuteScriptAsync(context, new StringReader(this.ScriptText), null, this, this.Verbose, this.OutputLevel, this.ErrorLevel);
 
         protected override ExtendedRichDescription GetDescription(IOperationConfiguration config)
         {

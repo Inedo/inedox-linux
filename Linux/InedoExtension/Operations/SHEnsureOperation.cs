@@ -1,26 +1,14 @@
-﻿#if !BuildMaster
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Inedo.Diagnostics;
 using Inedo.Documentation;
-#if Otter
-using Inedo.Otter.Documentation;
-using Inedo.Otter.Extensibility;
-using Inedo.Otter.Extensibility.Configurations;
-using Inedo.Otter.Extensibility.Operations;
-using Inedo.Otter.Extensions;
-using Inedo.Otter.Extensions.Configurations;
-using ExecContext = Inedo.Otter.Extensibility.Operations.IOperationExecutionContext;
-#else
 using Inedo.Extensibility;
 using Inedo.Extensibility.Configurations;
 using Inedo.Extensibility.Operations;
 using Inedo.Web;
-using ExecContext = Inedo.Extensibility.Operations.IOperationCollectionContext;
-#endif
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -88,7 +76,7 @@ namespace Inedo.Extensions.Linux.Operations
                 Value = this.ExpectedValue
             };
         }
-        public override async Task<PersistedConfiguration> CollectAsync(ExecContext context)
+        public override async Task<PersistedConfiguration> CollectAsync(IOperationCollectionContext context)
         {
             if (!this.ValidateConfiguration())
                 return null;
@@ -101,7 +89,7 @@ namespace Inedo.Extensions.Linux.Operations
                     context,
                     scriptReader,
                     !string.IsNullOrWhiteSpace(this.CollectScriptAsset) ? this.CollectScriptArgs : null,
-                    this.ToLogSink(),
+                    this,
                     this.Verbose,
                     !this.UseExitCode ? (Action<string>)
                         (s =>
@@ -130,7 +118,7 @@ namespace Inedo.Extensions.Linux.Operations
                     context,
                     scriptReader,
                     !string.IsNullOrWhiteSpace(this.ConfigureScriptAsset) ? this.ConfigureScriptArgs : null,
-                    this.ToLogSink(),
+                    this,
                     this.Verbose
                 );
             }
@@ -172,14 +160,14 @@ namespace Inedo.Extensions.Linux.Operations
         private async Task<TextReader> OpenCollectScriptAsync(IOperationExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(this.CollectScriptAsset))
-                return await SHUtil.OpenScriptAssetAsync(this.CollectScriptAsset, this.ToLogSink(), context);
+                return await SHUtil.OpenScriptAssetAsync(this.CollectScriptAsset, this, context);
             else
                 return new StringReader(this.CollectScript);
         }
         private async Task<TextReader> OpenConfigureScriptAsync(IOperationExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(this.ConfigureScriptAsset))
-                return await SHUtil.OpenScriptAssetAsync(this.ConfigureScriptAsset, this.ToLogSink(), context);
+                return await SHUtil.OpenScriptAssetAsync(this.ConfigureScriptAsset, this, context);
             else
                 return new StringReader(this.ConfigureScript);
         }
@@ -215,4 +203,3 @@ namespace Inedo.Extensions.Linux.Operations
         }
     }
 }
-#endif
