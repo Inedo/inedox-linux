@@ -5,6 +5,7 @@ using Inedo.Documentation;
 using Inedo.Extensibility;
 using Inedo.Extensibility.Operations;
 using Inedo.Extensions.Linux.SuggestionProviders;
+using Inedo.Web;
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -27,6 +28,11 @@ namespace Inedo.Extensions.Linux.Operations
         [ScriptAlias("Verbose")]
         [Description("When true, additional information about staging the script is written to the debug log.")]
         public bool Verbose { get; set; }
+        [Output]
+        [ScriptAlias("ExitCode")]
+        [DisplayName("Exit code")]
+        [PlaceholderText("eg. $ScriptExitCode")]
+        public int? ExitCode { get; set; }
         [Category("Logging")]
         [ScriptAlias("OutputLogLevel")]
         [DisplayName("Output log level")]
@@ -43,7 +49,7 @@ namespace Inedo.Extensions.Linux.Operations
                 if (scriptReader == null)
                     return;
 
-                await SHUtil.ExecuteScriptAsync(context, scriptReader, this.Arguments, this, this.Verbose, this.OutputLevel, this.ErrorLevel).ConfigureAwait(false);
+                this.ExitCode = await SHUtil.ExecuteScriptAsync(context, scriptReader, this.Arguments, this, this.Verbose, this.OutputLevel, this.ErrorLevel).ConfigureAwait(false);
             }
         }
 
