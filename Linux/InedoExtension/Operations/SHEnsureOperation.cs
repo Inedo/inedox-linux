@@ -8,6 +8,7 @@ using Inedo.Documentation;
 using Inedo.Extensibility;
 using Inedo.Extensibility.Configurations;
 using Inedo.Extensibility.Operations;
+using Inedo.Extensions.Linux.SuggestionProviders;
 using Inedo.Web;
 
 namespace Inedo.Extensions.Linux.Operations
@@ -30,22 +31,26 @@ namespace Inedo.Extensions.Linux.Operations
         [ScriptAlias("Collect")]
         [DisplayName("Collection script")]
         [Description("The output of this shell script will be used to collect the current configuration of the server.")]
+        [FieldEditMode(FieldEditMode.Multiline)]
         [Category("Collect")]
         public string CollectScript { get; set; }
         [ScriptAlias("Configure")]
         [DisplayName("Configure script")]
         [Description("This shell script is executed if the configuration gathered using the collection script does not match the stored configuration.")]
+        [FieldEditMode(FieldEditMode.Multiline)]
         [Category("Configure")]
         public string ConfigureScript { get; set; }
         [ScriptAlias("CollectScript")]
         [DisplayName("Collection script asset")]
         [Description("The name of a shell script asset to use for collection. The output of this script will be used to collect the current configuration of the server.")]
+        [SuggestableValue(typeof(ScriptNameSuggestionProvider))]
         [Category("Collect")]
         public string CollectScriptAsset { get; set; }
         [ScriptAlias("ConfigureScript")]
-        [Category("Configure")]
         [DisplayName("Configuration script asset")]
         [Description("The name of a shell script asset to use for configuration. This script is executed if the configuration gathered using the collection script does not match the stored configuration.")]
+        [SuggestableValue(typeof(ScriptNameSuggestionProvider))]
+        [Category("Configure")]
         public string ConfigureScriptAsset { get; set; }
         [ScriptAlias("UseExitCode")]
         [DisplayName("Use exit code")]

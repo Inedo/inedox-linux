@@ -4,6 +4,7 @@ using Inedo.Diagnostics;
 using Inedo.Documentation;
 using Inedo.Extensibility;
 using Inedo.Extensibility.Operations;
+using Inedo.Extensions.Linux.SuggestionProviders;
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -18,6 +19,7 @@ namespace Inedo.Extensions.Linux.Operations
         [ScriptAlias("Name")]
         [DisplayName("Name")]
         [Description("The name of the script asset.")]
+        [SuggestableValue(typeof(ScriptNameSuggestionProvider))]
         public string ScriptName { get; set; }
         [ScriptAlias("Arguments")]
         [Description("Arguments to pass to the script.")]
