@@ -1,6 +1,6 @@
 # inedox-linux
 
-[![Build status](https://ci.appveyor.com/api/projects/status/g5rgk9bc1e9aguk6/branch/master?svg=true)](https://ci.appveyor.com/project/Inedo/inedox-linux/branch/master)
+[![Build status](https://buildmaster.inedo.com/api/ci-badges/image?API_Key=badges&$ApplicationId=3)](https://buildmaster.inedo.com/api/ci-badges/link?API_Key=badges&$ApplicationId=3)
 
 Contains operations to interact with Linux servers.
 
