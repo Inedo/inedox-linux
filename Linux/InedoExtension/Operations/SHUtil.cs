@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Inedo.Agents;
+﻿using Inedo.Agents;
 using Inedo.Diagnostics;
 using Inedo.ExecutionEngine;
 using Inedo.Extensibility.Operations;
 using Inedo.Extensibility.RaftRepositories;
 using Inedo.IO;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -113,7 +112,7 @@ namespace Inedo.Extensions.Linux.Operations
             var scriptName = qualifiedName.Name;
             var raftName = qualifiedName.Namespace ?? RaftRepository.DefaultName;
 
-            var raft = RaftRepository.OpenRaft(raftName);
+            var raft = await context.OpenRaftAsync(raftName, OpenRaftOptions.None);
             try
             {
                 if (!scriptName.EndsWith(".sh", StringComparison.OrdinalIgnoreCase))
