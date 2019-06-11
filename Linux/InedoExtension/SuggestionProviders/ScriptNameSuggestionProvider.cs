@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Inedo.ExecutionEngine;
 using Inedo.Extensibility;
 using Inedo.Extensibility.RaftRepositories;
 using Inedo.Extensions.Linux.Operations;
@@ -13,11 +12,14 @@ namespace Inedo.Extensions.Linux.SuggestionProviders
     {
         public async Task<IEnumerable<string>> GetSuggestionsAsync(IComponentConfiguration config)
         {
+            if (string.IsNullOrEmpty(config["ScriptName"]))
+                return new string[0];
+
             var currentName = SHUtil.SplitScriptName(config["ScriptName"]);
 
             var scriptNames = new List<string>();
 
-            using (var raft = RaftRepository.OpenRaft(AH.CoalesceString(currentName?.Namespace, RaftRepository.DefaultName), OpenRaftOptions.OptimizeLoadTime | OpenRaftOptions.ReadOnly))
+            using (var raft = RaftRepository.OpenRaft(AH.CoalesceString(currentName.RaftName, RaftRepository.DefaultName), OpenRaftOptions.OptimizeLoadTime | OpenRaftOptions.ReadOnly))
             {
                 foreach (var script in await raft.GetRaftItemsAsync(RaftItemType.Script))
                 {

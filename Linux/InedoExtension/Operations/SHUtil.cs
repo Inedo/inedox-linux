@@ -110,8 +110,8 @@ namespace Inedo.Extensions.Linux.Operations
         public static async Task<TextReader> OpenScriptAssetAsync(string name, ILogSink logger, IOperationExecutionContext context)
         {
             var qualifiedName = SplitScriptName(name);
-            var scriptName = qualifiedName.Name;
-            var raftName = qualifiedName.Namespace ?? RaftRepository.DefaultName;
+            var scriptName = qualifiedName.ItemName;
+            var raftName = qualifiedName.RaftName ?? RaftRepository.DefaultName;
 
             var raft = RaftRepository.OpenRaft(raftName);
             try
