@@ -109,7 +109,7 @@ namespace Inedo.Extensions.Linux.Operations
 
         public static async Task<TextReader> OpenScriptAssetAsync(string name, ILogSink logger, IOperationExecutionContext context)
         {
-            var qualifiedName = QualifiedName.Parse(name);
+            var qualifiedName = SplitScriptName(name);
             var scriptName = qualifiedName.Name;
             var raftName = qualifiedName.Namespace ?? RaftRepository.DefaultName;
 
@@ -135,6 +135,18 @@ namespace Inedo.Extensions.Linux.Operations
                 catch { }
                 throw;
             }
+        }
+
+        internal static (string RaftName, string ItemName) SplitScriptName(string scriptName)
+        {
+            if (string.IsNullOrEmpty(scriptName))
+                throw new ArgumentNullException(nameof(scriptName));
+
+            int sep = scriptName.IndexOf("::");
+            if (sep == -1)
+                return (null, scriptName);
+
+            return (scriptName.Substring(0, sep), scriptName.Substring(sep + 2));
         }
     }
 }

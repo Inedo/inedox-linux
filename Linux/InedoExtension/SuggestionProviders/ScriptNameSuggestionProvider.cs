@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Inedo.ExecutionEngine;
 using Inedo.Extensibility;
 using Inedo.Extensibility.RaftRepositories;
+using Inedo.Extensions.Linux.Operations;
 using Inedo.Web;
 
 namespace Inedo.Extensions.Linux.SuggestionProviders
@@ -12,7 +13,7 @@ namespace Inedo.Extensions.Linux.SuggestionProviders
     {
         public async Task<IEnumerable<string>> GetSuggestionsAsync(IComponentConfiguration config)
         {
-            var currentName = QualifiedName.TryParse(config["ScriptName"]);
+            var currentName = SHUtil.SplitScriptName(config["ScriptName"]);
 
             var scriptNames = new List<string>();
 
