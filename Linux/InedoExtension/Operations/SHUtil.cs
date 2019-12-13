@@ -1,13 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Inedo.Agents;
 using Inedo.Diagnostics;
-using Inedo.ExecutionEngine;
 using Inedo.Extensibility.Operations;
 using Inedo.Extensibility.RaftRepositories;
-using Inedo.IO;
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -107,34 +104,20 @@ namespace Inedo.Extensions.Linux.Operations
                 logger.Log(level, text);
         }
 
-        public static async Task<TextReader> OpenScriptAssetAsync(string name, ILogSink logger, IOperationExecutionContext context)
+        public static TextReader OpenScriptAsset(string name, ILogSink logger, IOperationExecutionContext context)
         {
-            var qualifiedName = SplitScriptName(name);
-            var scriptName = qualifiedName.ItemName;
-            var raftName = qualifiedName.RaftName ?? RaftRepository.DefaultName;
+            var scriptName = name;
+            if (!scriptName.EndsWith(".sh", StringComparison.OrdinalIgnoreCase))
+                scriptName += ".sh";
 
-            var raft = RaftRepository.OpenRaft(raftName);
-            try
+            var item = SDK.GetRaftItem(RaftItemType.Script, scriptName, context);
+            if (item == null)
             {
-                if (!scriptName.EndsWith(".sh", StringComparison.OrdinalIgnoreCase))
-                    scriptName += ".sh";
-
-                if (await raft.GetRaftItemAsync(RaftItemType.Script, scriptName) == null)
-                {
-                    logger.LogError($"Could not find script {scriptName} in {raftName} raft.");
-                    raft.Dispose();
-                    return null;
-                }
-
-                var item = await raft.OpenRaftItemAsync(RaftItemType.Script, scriptName, FileMode.Open, FileAccess.Read);
-                return new StreamReader(new DisposingStream(item, item, raft), InedoLib.UTF8Encoding);
+                logger.LogError($"Could not find script {scriptName}.");
+                return null;
             }
-            catch
-            {
-                try { raft?.Dispose(); }
-                catch { }
-                throw;
-            }
+
+            return new StringReader(item.Content);
         }
 
         internal static (string RaftName, string ItemName) SplitScriptName(string scriptName)

@@ -1,36 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Inedo.Extensibility;
 using Inedo.Extensibility.RaftRepositories;
-using Inedo.Extensions.Linux.Operations;
 using Inedo.Web;
 
 namespace Inedo.Extensions.Linux.SuggestionProviders
 {
     internal sealed class ScriptNameSuggestionProvider : ISuggestionProvider
     {
-        public async Task<IEnumerable<string>> GetSuggestionsAsync(IComponentConfiguration config)
+        public Task<IEnumerable<string>> GetSuggestionsAsync(IComponentConfiguration config)
         {
-            if (string.IsNullOrEmpty(config["ScriptName"]))
-                return new string[0];
+            return Task.FromResult(getItems());
 
-            var currentName = SHUtil.SplitScriptName(config["ScriptName"]);
-
-            var scriptNames = new List<string>();
-
-            using (var raft = RaftRepository.OpenRaft(AH.CoalesceString(currentName.RaftName, RaftRepository.DefaultName), OpenRaftOptions.OptimizeLoadTime | OpenRaftOptions.ReadOnly))
+            IEnumerable<string> getItems()
             {
-                foreach (var script in await raft.GetRaftItemsAsync(RaftItemType.Script))
-                {
-                    if (script.ItemName.EndsWith(".sh", StringComparison.OrdinalIgnoreCase))
-                    {
-                        scriptNames.Add(AH.ConcatNE(AH.NullIf(raft.RaftName, RaftRepository.DefaultName), "::") + script.ItemName.Substring(0, script.ItemName.Length - ".sh".Length));
-                    }
-                }
-            }
+                if (string.IsNullOrEmpty(config["ScriptName"]))
+                    return Enumerable.Empty<string>();
 
-            return scriptNames;
+                return SDK.GetRaftItems(RaftItemType.Script, config.EditorContext)
+                    .Where(i => i.Name.EndsWith(".sh", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(i => i.Name)
+                    .Select(i => i.Name)
+                    .ToList();
+            }
         }
     }
 }

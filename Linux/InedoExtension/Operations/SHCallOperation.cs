@@ -44,7 +44,7 @@ namespace Inedo.Extensions.Linux.Operations
 
         public override async Task ExecuteAsync(IOperationExecutionContext context)
         {
-            using (var scriptReader = await SHUtil.OpenScriptAssetAsync(this.ScriptName, this, context))
+            using (var scriptReader = SHUtil.OpenScriptAsset(this.ScriptName, this, context))
             {
                 if (scriptReader == null)
                     return;
