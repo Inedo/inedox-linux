@@ -89,7 +89,7 @@ namespace Inedo.Extensions.Linux.Operations
 
             int? exitCode;
             var output = new List<string>();
-            using (var scriptReader = await this.OpenCollectScriptAsync(context))
+            using (var scriptReader = this.OpenCollectScript(context))
             {
                 exitCode = await SHUtil.ExecuteScriptAsync(
                     context,
@@ -118,7 +118,7 @@ namespace Inedo.Extensions.Linux.Operations
             if (!this.ValidateConfiguration())
                 return;
 
-            using (var scriptReader = await this.OpenConfigureScriptAsync(context))
+            using (var scriptReader = this.OpenConfigureScript(context))
             {
                 await SHUtil.ExecuteScriptAsync(
                     context,
@@ -163,17 +163,17 @@ namespace Inedo.Extensions.Linux.Operations
             }
         }
 
-        private async Task<TextReader> OpenCollectScriptAsync(IOperationExecutionContext context)
+        private TextReader OpenCollectScript(IOperationExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(this.CollectScriptAsset))
-                return await SHUtil.OpenScriptAssetAsync(this.CollectScriptAsset, this, context);
+                return SHUtil.OpenScriptAsset(this.CollectScriptAsset, this, context);
             else
                 return new StringReader(this.CollectScript);
         }
-        private async Task<TextReader> OpenConfigureScriptAsync(IOperationExecutionContext context)
+        private TextReader OpenConfigureScript(IOperationExecutionContext context)
         {
             if (!string.IsNullOrWhiteSpace(this.ConfigureScriptAsset))
-                return await SHUtil.OpenScriptAssetAsync(this.ConfigureScriptAsset, this, context);
+                return SHUtil.OpenScriptAsset(this.ConfigureScriptAsset, this, context);
             else
                 return new StringReader(this.ConfigureScript);
         }
