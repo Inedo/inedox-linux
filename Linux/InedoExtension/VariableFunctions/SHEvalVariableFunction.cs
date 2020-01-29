@@ -22,7 +22,7 @@ date -d next-year +%Y
 set $NextYear = $SHEval($ShellScript);
 Log-Information $NextYear;
 ")]
-    [AppliesTo(InedoProduct.BuildMaster | InedoProduct.Hedgehog | InedoProduct.Otter)]
+    [AppliesTo(InedoProduct.BuildMaster | InedoProduct.Otter)]
     public sealed class SHEvalVariableFunction : ScalarVariableFunction
     {
         [DisplayName("script")]
@@ -40,7 +40,7 @@ Log-Information $NextYear;
 
             var output = new StringBuilder();
 
-            SHUtil.ExecuteScriptAsync(execContext, new StringReader(this.ScriptText), null, NullLogSink.Instance, false, data => output.AppendLine(data)).WaitAndUnwrapExceptions();
+            SHUtil.ExecuteScriptAsync(execContext, new StringReader(this.ScriptText), null, NullLogSink.Instance, false, data => output.AppendLine(data)).GetAwaiter().GetResult();
 
             return output.ToString();
         }
