@@ -16,4 +16,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
   <PropertyGroup />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="$(TargetFramework) == 'net452'">
+    <Exec Command="powershell -Command &quot;if ((Test-Path C:\LocalDev\Tools\inedoxpack\inedoxpack.exe) -And (Test-Path C:\LocalDev\Otter\Extensions -PathType Container)) { C:\LocalDev\Tools\inedoxpack\inedoxpack.exe '$(TargetDir)..\$(TargetFileName)' 'C:\LocalDev\Otter\Extensions\$(TargetName).upack' 0.0.0 }&quot;" />
+  </Target>
 </Project>
