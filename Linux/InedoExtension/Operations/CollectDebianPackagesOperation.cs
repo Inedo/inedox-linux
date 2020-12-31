@@ -8,6 +8,8 @@ using Inedo.Documentation;
 using Inedo.Extensibility;
 using Inedo.Extensibility.Operations;
 using Inedo.Extensibility.Configurations;
+using Inedo.Extensions.Linux.Configurations;
+using System.Linq;
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -15,12 +17,15 @@ namespace Inedo.Extensions.Linux.Operations
     [Description("Collects the names and versions of .deb packages installed on a server.")]
     [ScriptAlias("Collect-DebianPackages")]
     [ScriptNamespace("Linux", PreferUnqualified = true)]
-    public sealed class CollectDebianPackagesOperation : CollectOperation<DictionaryConfiguration>
+    public sealed class CollectDebianPackagesOperation : CollectPackagesOperation
     {
-        public async override Task<DictionaryConfiguration> CollectConfigAsync(IOperationCollectionContext context)
+        public override string PackageType => "Debian";
+
+        protected async override Task<IEnumerable<PackageConfiguration>> CollectPackagesAsync(IOperationCollectionContext context)
         {
+
             var remoteExecuter = await context.Agent.GetServiceAsync<IRemoteProcessExecuter>().ConfigureAwait(false);
-            var packages = new List<Package>();
+            var packages = new List<PackageConfiguration>();
 
             using (var process = remoteExecuter.CreateProcess(new RemoteProcessStartInfo
             {
@@ -35,7 +40,7 @@ namespace Inedo.Extensions.Linux.Operations
                         return;
 
                     var parts = e.Data.Split(new[] { ' ' }, 4, StringSplitOptions.RemoveEmptyEntries);
-                    packages.Add(new Package(parts[1], parts[2]));
+                    packages.Add(new DebianPackageConfiguration { PackageName = parts[1], PackageVersion = parts[2] });
                 };
                 process.ErrorDataReceived += (s, e) =>
                 {
@@ -48,19 +53,11 @@ namespace Inedo.Extensions.Linux.Operations
                 if (process.ExitCode != 0)
                 {
                     this.LogError($"\"dpkg --list\" exited with code {process.ExitCode}");
-                    return null;
+                    return Enumerable.Empty<PackageConfiguration>();
                 }
             }
 
-            using (var collect = context.GetServerCollectionContext())
-            {
-                await collect.ClearAllPackagesAsync("Debian");
-
-                foreach (var package in packages)
-                    await collect.CreateOrUpdatePackageAsync("Debian", package.Name, package.Version, null);
-            }
-
-            return null;
+            return packages;
         }
 
         protected override ExtendedRichDescription GetDescription(IOperationConfiguration config)
@@ -68,18 +65,6 @@ namespace Inedo.Extensions.Linux.Operations
             return new ExtendedRichDescription(
                 new RichDescription("Collect Debian Packages")
             );
-        }
-
-        private struct Package
-        {
-            public Package(string name, string version)
-            {
-                this.Name = name;
-                this.Version = version;
-            }
-
-            public string Name { get; }
-            public string Version { get; }
         }
     }
 }

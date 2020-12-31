@@ -7,6 +7,8 @@ using Inedo.Documentation;
 using Inedo.Extensibility;
 using Inedo.Extensibility.Operations;
 using Inedo.Extensibility.Configurations;
+using Inedo.Extensions.Linux.Configurations;
+using System.Linq;
 
 namespace Inedo.Extensions.Linux.Operations
 {
@@ -14,12 +16,15 @@ namespace Inedo.Extensions.Linux.Operations
     [Description("Collects the names and versions of .rpm packages installed on a server.")]
     [ScriptAlias("Collect-RpmPackages")]
     [ScriptNamespace("Linux", PreferUnqualified = true)]
-    public sealed class CollectRpmPackagesOperation : CollectOperation<DictionaryConfiguration>
+    public sealed class CollectRpmPackagesOperation : CollectPackagesOperation
     {
-        public async override Task<DictionaryConfiguration> CollectConfigAsync(IOperationCollectionContext context)
+        public override string PackageType => "RPM";
+
+        protected async override Task<IEnumerable<PackageConfiguration>> CollectPackagesAsync(IOperationCollectionContext context)
         {
+
             var remoteExecuter = await context.Agent.GetServiceAsync<IRemoteProcessExecuter>().ConfigureAwait(false);
-            var packages = new List<Package>();
+            var packages = new List<PackageConfiguration>();
 
             using (var process = remoteExecuter.CreateProcess(new RemoteProcessStartInfo
             {
@@ -30,7 +35,7 @@ namespace Inedo.Extensions.Linux.Operations
                 process.OutputDataReceived += (s, e) =>
                 {
                     var parts = e.Data.Split(new[] { '-' }, 2);
-                    packages.Add(new Package(parts[0], parts[1]));
+                    packages.Add(new RpmPackageConfiguration { PackageName = parts[0], PackageVersion = parts[1] });
                 };
                 process.ErrorDataReceived += (s, e) =>
                 {
@@ -43,19 +48,11 @@ namespace Inedo.Extensions.Linux.Operations
                 if (process.ExitCode != 0)
                 {
                     this.LogError($"\"rpm -qa\" exited with code {process.ExitCode}");
-                    return null;
+                    return Enumerable.Empty<RpmPackageConfiguration>();
                 }
             }
 
-            using (var collect = context.GetServerCollectionContext())
-            {
-                await collect.ClearAllPackagesAsync("RPM");
-
-                foreach (var package in packages)
-                    await collect.CreateOrUpdatePackageAsync("RPM", package.Name, package.Version, null);
-            }
-
-            return null;
+            return packages;
         }
 
         protected override ExtendedRichDescription GetDescription(IOperationConfiguration config)
@@ -63,18 +60,6 @@ namespace Inedo.Extensions.Linux.Operations
             return new ExtendedRichDescription(
                 new RichDescription("Collect RPM Packages")
             );
-        }
-
-        private struct Package
-        {
-            public Package(string name, string version)
-            {
-                this.Name = name;
-                this.Version = version;
-            }
-
-            public string Name { get; }
-            public string Version { get; }
         }
     }
 }
